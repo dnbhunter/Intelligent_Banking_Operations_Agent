@@ -61,41 +61,8 @@ My apologies again for the diagram errors. Mermaid syntax can be a bit particula
 Here's the corrected diagram:
 Ran tool
 My apologies for the repeated errors with the diagram. It seems I was having some trouble with the Mermaid syntax. Third time's the charm! Here is the corrected high-level architecture diagram.
-graph TD
-    subgraph "User Interface"
-        A["📱 Streamlit Dashboard"]
-    end
+<img width="1785" height="1015" alt="image" src="https://github.com/user-attachments/assets/8e194c09-98c0-4fbd-a55f-5b492e6c7fb9" />
 
-    subgraph "Backend API"
-        B["🚀 FastAPI Server"]
-    end
-
-    subgraph "Core Agent Logic"
-        C["🕵️‍♀️ Fraud Triage Agent"]
-        D["📈 Credit Risk Agent"]
-    end
-
-    subgraph "Data & Supporting Models"
-        E["📜 Policy Documents <br> (AML, KYC, Credit)"]
-        F["💾 Database <br> (MongoDB)"]
-        G["🤖 Machine Learning Models"]
-    end
-
-    A -- "API Calls (HTTP)" --> B
-    B -- "Routes to" --> C
-    B -- "Routes to" --> D
-    C -- "Uses" --> G
-    D -- "Consults" --> E
-    C -- "Logs to" --> F
-    D -- "Logs to" --> F
-    
-    style A fill:#FF4B4B,stroke:#333,stroke-width:2px
-    style B fill:#0068C9,stroke:#333,stroke-width:2px
-    style C fill:#2E8B57,stroke:#333,stroke-width:2px
-    style D fill:#2E8B57,stroke:#333,stroke-width:2px
-    style E fill:#FFD700,stroke:#333,stroke-width:2px
-    style F fill:#DA70D6,stroke:#333,stroke-width:2px
-    style G fill:#FF6347,stroke:#333,stroke-width:2px
 Let's break down what's happening in this diagram:
 
 1.  **The User Interface (Streamlit Dashboard)**: This is the face of our application. A bank employee, like a fraud analyst or a loan officer, interacts with this dashboard. It's a simple web page where they can input data about a transaction or a loan application and see the results from the AI agents. We use **Streamlit** because it's a fantastic Python library for creating data-centric web apps quickly.
