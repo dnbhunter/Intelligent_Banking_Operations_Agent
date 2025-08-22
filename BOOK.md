@@ -100,104 +100,124 @@ Excellent! Let's move on to the next chapter and get this project running on you
 
 ## **Chapter 2: Getting Started - Your Local Setup 💻**
 
-This chapter is all about getting your hands dirty! We'll walk through the steps to get the "Intelligent Banking Operations Agent" project running on your own computer. This will allow you to experiment with the code, see the agents in action, and follow along with the deep dives in later chapters.
+This chapter is all about getting your hands dirty! We'll walk through the steps to get the "Intelligent Banking Operations Agent" project running on your own computer using a standard Python virtual environment. This will allow you to experiment with the code, see the agents in action, and follow along with the deep dives in later chapters.
 
 ### **Prerequisites: What You'll Need 🛠️**
 
 Before we start, make sure you have the following software installed on your system.
-*   **Python (Version 3.10 or newer)**: The entire project is written in Python. You can check your Python version by opening a terminal or command prompt and running:
+*   **Python (Version 3.11 or 3.12 recommended)**: The project is written in Python. Some dependencies may not yet support the newest Python versions, so sticking to a slightly older version like 3.11 is a good idea. You can check your Python version by opening a terminal or command prompt and running:
     ```bash
     python --version
     ```
-    If you don't have Python or have an older version, you can download the latest version from the [official Python website](https://www.python.org/downloads/).
+    If you don't have Python or have an older version, you can download a suitable version from the [official Python website](https://www.python.org/downloads/). **Make sure to check the "Add Python to PATH" option during installation.**
 
 *   **Git**: The project is managed using Git, a version control system. You'll need it to download (or "clone") the project's source code. You can download Git from [git-scm.com](https://git-scm.com/downloads).
-
-*   **Docker (Optional but Recommended)**: The project is designed to run using Docker, which makes the setup process much smoother and avoids potential conflicts with other software on your system. Docker containers wrap up the application and all its dependencies into a neat little package. We highly recommend using it. You can get Docker Desktop from the [official Docker website](https://www.docker.com/products/docker-desktop/).
 
 *   **An IDE or Code Editor**: You'll need a good code editor to explore the project. [Visual Studio Code](https://code.visualstudio.com/) is a fantastic, free option with great Python support.
 
 ### **Step 1: Clone the Repository**
 
-First, you need to get a copy of the source code. Open your terminal, navigate to a directory where you want to store the project, and run the following Git command:
+First, you need to get a copy of the source code. Open your terminal (PowerShell or Command Prompt), navigate to a directory where you want to store the project, and run the following Git command:
 
 ```bash
 git clone <repository_url>
+cd Intelligent_Banking_Operations_Agent
 ```
 *(Note: Replace `<repository_url>` with the actual URL of the project's Git repository.)*
 
-This will create a new folder named `Intelligent_Banking_Operations_Agent` containing all the project files.
+This will create a new folder named `Intelligent_Banking_Operations_Agent` containing all the project files and navigate you inside it.
 
-### **Step 2: Set Up Environment Variables**
+### **Step 2: Set Up a Virtual Environment and Install Dependencies**
 
-Intelligent applications often need to connect to various services, and they use API keys or other secrets to do so. It's a best practice to never write these secrets directly in the code. Instead, we use environment variables.
+Running Python projects in a "virtual environment" is a best practice. It isolates the project's dependencies from your global Python installation, preventing conflicts.
 
-This project uses a `.env` file to manage these settings. You'll need to create this file in the root of the project directory.
+From the project's root directory, run the following commands in your terminal:
 
-1.  Navigate into the project directory:
+**1. Create the Virtual Environment:**
+```bash
+python -m venv .venv
+```
+This creates a `.venv` folder in your project directory containing a private copy of Python.
+
+**2. Activate the Virtual Environment (Windows PowerShell):**
+You may need to allow scripts to run in your terminal session first.
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+.\.venv\Scripts\Activate.ps1
+```
+After activation, you should see `(.venv)` at the beginning of your terminal prompt.
+
+**3. Install the Required Packages:**
+Now that your virtual environment is active, you can install all the project's dependencies with a single command:
+```bash
+pip install -r requirements.txt
+```
+This will download and install all the libraries listed in the `requirements.txt` file into your `.venv`.
+
+### **Step 3: Set Up Environment Variables**
+
+Intelligent applications often need API keys or other secrets. We manage these using a `.env` file.
+
+1.  Navigate into the main application directory:
     ```bash
     cd Intelligent_Banking_Operations_Agent
     ```
-2.  Create a file named `.env`.
+2.  Create a file named `.env` inside this directory.
 3.  Open the `.env` file and add the following content:
     ```
-    # OpenAI API Key for Large Language Models
+    # OpenAI API Key for Large Language Models (needed for RAG/LLM features)
     # Get yours from https://platform.openai.com/api-keys
     OPENAI_API_KEY="your_openai_api_key_here"
 
-    # LangSmith is used for tracing and debugging the agents
-    # It's optional but very helpful. Get your key from https://smith.langchain.com/
+    # LangSmith is used for tracing and debugging the agents (optional)
+    # Get your key from https://smith.langchain.com/
     LANGCHAIN_TRACING_V2="true"
     LANGCHAIN_API_KEY="your_langsmith_api_key_here"
     LANGCHAIN_PROJECT="Intelligent Banking Ops"
 
-    # Application settings
+    # Application settings for local run
     ALLOW_DEBUG=True
-    API_HOST="0.0.0.0"
+    API_HOST="127.0.0.1"
     API_PORT="8000"
     DASHBOARD_API_BASE="http://localhost:8000/api/v1"
     ```
-**Important**: You will need an `OPENAI_API_KEY` for the agents to work, as they rely on models like GPT-4 for their intelligence. The LangSmith key is optional for now but will be very useful for debugging later.
+**Important**: The core features (Fraud and Credit triage) will work without an `OPENAI_API_KEY`. However, to use the more advanced LLM-powered rationales or the RAG agent, you will need to provide one.
 
-### **Step 3: Build and Run with Docker Compose 🐳**
+### **Step 4: Run the Application! 🚀**
 
-This is the easiest way to get the entire system up and running. The `docker-compose.yml` file in the project is a recipe that tells Docker how to build and run the multi-container application (the backend API and the frontend dashboard).
+The system consists of two separate processes that you need to run in two separate terminals.
 
-From the root directory of the project, run the following command in your terminal:
-
+**Terminal 1: Start the Backend (FastAPI Server)**
+Make sure you are in the `Intelligent_Banking_Operations_Agent` directory and your virtual environment is activated. Then run:
 ```bash
-docker-compose up --build
+python -m uvicorn main:app --reload
 ```
+You should see output indicating that the Uvicorn server is running on `http://127.0.0.1:8000`.
 
-Let's break down this command:
-*   `docker-compose up`: This tells Docker to start the services defined in the `docker-compose.yml` file.
-*   `--build`: This flag tells Docker to rebuild the images before starting. You should use this the first time you run the command, or anytime you make changes to the project's dependencies (`requirements.txt`) or the Dockerfiles.
+**Terminal 2: Start the Frontend (Streamlit Dashboard)**
+Open a **new terminal**, navigate to the project root (`Intelligent_Banking_Operations_Agent`), and activate the virtual environment again:
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+Then, run the Streamlit app:
+```bash
+streamlit run frontend/dashboard.py
+```
+This will automatically open the dashboard in your web browser, usually at `http://localhost:8501`.
 
-This command will:
-1.  Read the `Dockerfile` for the backend and the `docker/Dockerfile.streamlit` for the frontend.
-2.  Build the Docker images for both services, installing all the Python packages listed in `requirements.txt`.
-3.  Start two containers: one for the FastAPI backend and one for the Streamlit frontend.
-4.  You'll see a lot of logs in your terminal from both services. This is normal!
+### **Step 5: See It in Action!**
 
-### **Step 4: See It in Action! 🚀**
+You should now have the application fully running:
+*   **The Streamlit Dashboard** is open in your browser at **[http://localhost:8501](http://localhost:8501)**.
+*   **The FastAPI Backend** is running in your first terminal. You can see its interactive documentation at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
 
-Once the `docker-compose` command has finished and the services are running, you can access the application:
-
-*   **Open the Streamlit Dashboard**: Open your web browser and navigate to:
-    **[http://localhost:8501](http://localhost:8501)**
-    You should see the "Intelligent Banking Operations Agent" dashboard with its three tabs: "Fraud Triage," "Credit Triage," and "Analytics."
-
-*   **(Optional) Check the API Health**: You can also check if the backend API is running correctly by navigating to:
-    **[http://localhost:8000](http://localhost:8000)**
-    You should see a JSON response like: `{"status":"ok","service":"banking-ops"}`.
-    You can also see the interactive API documentation (provided by FastAPI) at **[http://localhost:8000/docs](http://localhost:8000/docs)**.
-
-**Congratulations!** 🎉 You now have a fully functional instance of the Intelligent Banking Operations Agent running locally. You can now try submitting a sample transaction for fraud analysis or a sample application for a credit check.
+**Congratulations!** 🎉 You now have a fully functional local instance of the Intelligent Banking Operations Agent.
 
 ### **Troubleshooting Tips 🔍**
-*   **`docker-compose` command not found**: Make sure you have Docker Desktop installed and running.
-*   **Port conflicts**: If you have another service running on port 8000 or 8501, you might get an error. You can either stop the other service or change the ports in the `docker-compose.yml` file.
-*   **Errors during build**: Pay close attention to the logs during the `docker-compose up --build` process. The error messages will often tell you exactly what's wrong (e.g., a typo in `requirements.txt`).
+*   **`python` or `pip` command not found**: Make sure you have added Python to your system's PATH during installation.
+*   **Script execution errors in PowerShell**: If you can't run `Activate.ps1`, ensure you've run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process` first. Alternatively, use Windows Command Prompt, where the activation command is `.\.venv\Scripts\activate.bat`.
+*   **`ModuleNotFoundError`**: This usually means your virtual environment is not active or you haven't installed the dependencies. Make sure you see `(.venv)` in your prompt and that you ran `pip install -r requirements.txt` successfully.
+*   **Port conflicts**: If you have another service running on port 8000 or 8501, you will get an error. You can stop the other service or change the port for the FastAPI server with the `--port` flag (e.g., `uvicorn main:app --port 8001`).
 
 ***
 
@@ -213,8 +233,9 @@ Every great project is built on the shoulders of powerful tools and frameworks. 
 
 Here's a diagram summarizing the main components of our tech stack:
 
-<img width="1570" height="763" alt="image" src="https://github.com/user-attachments/assets/a911f030-519b-4694-9087-1a1ff18e03ad" />
-
+<div align="center">
+  <img src="https://mermaid.ink/svg/eyJjb2RlIjoiZ3JhcGggTFJcbiAgICBzdWJncmFwaCBcIkZyb250ZW5kXCJcbiAgICAgICAgQVtcIlN0cmVhbWxpdDxici8-PGk-Rm9yIHJhcGlkIFVJIGRldmVsb3BtZW50PC9pPlwiXVxuICAgIGVuZFxuXG4gICAgc3ViZ3JhcGggXCJCYWNrZW5kXCJcbiAgICAgICAgQltcIkZhc3RBUEk8YnIvPjxpPkZvciBoaWdoLXBlcmZvcm1hbmNlIEFQSXM8L2k-XCJdXG4gICAgZW5kXG5cbiAgICBzdWJncmFwaCBcIkFJJCAmIE9yY2hlc3RyYXRpb25cIlxuICAgICAgICBDW1wiTGFuZ0NoYWluPGJyLz48aT5UaGUgYnJhaW4gZm9yIG91ciBhZ2VudHM8L2k-XCJdXG4gICAgICAgIEVbXCJGYXN0QVBJWWJyLz48aT5Gb3IgaGlnaC1wZXJmb3JtYW5jZSBBUElzPC9pPlwiXVxuICAgICAgICBEW1wiTGFuZ0dyYXBoPGJyLz48aT5Gb3IgbXVsdGktYWdlbnQgd29ya2Zsb3dzPC9pPlwiXVxuICAgICAgICBFW1wiT3BlbkFJPGJyLz48aT5Qcm92aWRlcyB0aGUgTExNcyAoZS5nLiwgR1BULTQpPC9pPlwiXVxuICAgIGVuZFxuXG4gICAgc3ViZ3JhcGggXCJEYXRhICYgTWFjaGluZSBMZWFybmluZ1wiXG4gICAgICAgIEZbXCJTY2lraXQtbGVhcm48YnIvPjxpPkZvciBjbGFzc2ljYWwgTUwgbW9kZWxzPC9pPlwiXVxuICAgICAgICBHW1wiUGFuZGFzPGJyLz48aT5Gb3IgZGF0YSBtYW5pcHVsYXRpb248L2k-XCJdXG4gICAgICAgIEhbXCJDaHJvbWFEQjxici8-PGk-VmVjdG9yIGRhdGFiYXNlIGZvciBSQUc8L2k-XCJdXG4gICAgZW5kXG5cbiAgICBzdWJncmFwaCBcIkluZnJhc3RydWN0dXJlXCJcbiAgICAgICAgSVtcIlB5dGhvbiBWaXJ0dWFsIEVudmlyb25tZW50ICh2ZW52KVwiXVxuICAgIGVuZFxuXG4gICAgQSAtLSAgXCBDb21tdW5pY2F0ZXMgdmlhIEhUVFBcIiAtLT4gQlxuICAgIEIgLS0gXCJVc2VzXCIgLS0-IEMgXG4gICAgQyAtLSAgXCJPcmNoZXN0cmF0ZXMgd2l0aFwiIC0tPiBEXG4gICAgQyAtLSAgXCJDYWxsc1wiIC0tPiBFXG4gICAgQiAtLSAgXCJVc2VzXCIgLS0-IEZcbiAgICBGIC0tIFwiUHJvY2Vzc2VzIGRhdGEgd2l0aFwiIC0tPiBHXG4gICAgQyAtLSAgXCJSZXRyaWV2ZXMgZnJvbVwiIC0tPiBIXG4gICAgXG4gICAgY2xhc3NEZWYgZnJvbnRlbmQgZmlsbDojRkY0QjRCLHN0cm9rZTojMzMzLGNvbG9yOiMwMDBcbiAgICBjbGFzc0RlZiBiYWNrZW5kIGZpbGw6IzAwNjhDOSxzdHJva2U6IzMzMyxjb2xvcjojRkZGXG4gICAgY2xhc3NEZWYgYWkgZmlsbDojMkU4QjVDLHN0cm9rZTojMzMzLGNvbG9yOiNGRkZcbiAgICBjbGFzc0RlZiBkYXRhIGZpbGw6I0ZGRDcwMCxzdHJva2U6IzMzMyxjb2xvcjojMDAwXG4gICAgY2xhc3NEZWYgaW5mcmEgZmlsbDojNjY2LHN0cm9rZTojMzMzLGNvbG9yOiNGRkZcblxuICAgIGNsYXNzIEEgZnJvbnRlbmRcbiAgICBjbGFzcyBCIGJhY2tlbmRcbiAgICBjbGFzcyBDLEQsRSBhaVxuICAgIGNsYXNzIEYsRyxIIGRhdGFcbiAgICBjbGFzcyBJIGluZnJhXG4iLCJtZXJtYWlkIjp7fSwidXBkYXRlRWRpdG9yIjpmYWxzZSwiYXV0b1ynciOnRydWUsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ==" alt="Tech Stack Diagram">
+</div>
 
 ### **1. Backend: FastAPI**
 
@@ -260,13 +281,13 @@ Here's a diagram summarizing the main components of our tech stack:
     *   **What it is**: An open-source vector database.
     *   **Why it's used**: It's the core of our RAG (Retrieval-Augmented Generation) system. When we have policy documents, we first convert them into numerical representations (embeddings) that capture their semantic meaning. ChromaDB stores these embeddings and allows us to perform lightning-fast searches to find the most relevant policy sections for a given situation (e.g., finding the part of the credit policy that applies to a low-income applicant).
 
-### **6. Infrastructure: Docker**
+### **6. Infrastructure: Python Virtual Environment (`venv`)**
 
-*   **What it is**: A platform for developing, shipping, and running applications in containers.
+*   **What it is**: A standard Python tool for creating isolated environments.
 *   **Why it's used**:
-    *   **Consistency 📦**: Docker ensures that the application runs the same way everywhere, regardless of the developer's operating system or local setup. This eliminates the classic "but it works on my machine!" problem.
-    *   **Isolation**: It keeps the project's dependencies isolated from other projects on your system.
-    *   **Simplified Deployment**: Docker makes it much easier to deploy the application to the cloud.
+    *   **Dependency Isolation**: `venv` ensures that the specific versions of packages used by this project (defined in `requirements.txt`) don't conflict with packages needed by other projects on your system.
+    *   **Reproducibility**: It makes it easy for new developers to create the exact same environment, ensuring the application runs consistently for everyone.
+    *   **Simplicity**: It's a lightweight, built-in part of Python, requiring no external software.
 
 ***
 
@@ -1067,10 +1088,6 @@ Intelligent_Banking_Operations_Agent/
 │   │   ├── CreditPolicy.txt
 │   │   └── KYC.txt
 │   └── sample_banking_data.json
-├── docker/
-│   └── Dockerfile.streamlit
-├── docker-compose.yml
-├── Dockerfile
 ├── frontend/
 │   └── dashboard.py
 ├── main.py
@@ -1114,7 +1131,7 @@ Intelligent_Banking_Operations_Agent/
 *   **FastAPI**: [Official Documentation](https://fastapi.tiangolo.com/)
 *   **Streamlit**: [Official Documentation](https://docs.streamlit.io/)
 *   **LangChain & LangGraph**: [Official Documentation](https://python.langchain.com/)
-*   **Docker**: [Official Documentation](https://docs.docker.com/)
+*   **Python Virtual Environments**: [Official Documentation](https://docs.python.org/3/library/venv.html)
 *   **Retrieval-Augmented Generation (RAG)**: [Blog post from the LangChain team](https://blog.langchain.dev/retrieval-augmented-generation-rag/)
 
 ***
