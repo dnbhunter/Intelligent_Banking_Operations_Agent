@@ -61,11 +61,41 @@ My apologies again for the diagram errors. Mermaid syntax can be a bit particula
 Here's the corrected diagram:
 Ran tool
 My apologies for the repeated errors with the diagram. It seems I was having some trouble with the Mermaid syntax. Third time's the charm! Here is the corrected high-level architecture diagram.
+graph TD
+    subgraph "User Interface"
+        A["📱 Streamlit Dashboard"]
+    end
 
-<div align="center">
-  <img src="https://mermaid.ink/svg/eyJjb2RlIjoiZ3JhcGggVERcbiAgICBzdWJncmFwaCBcIlVzZXIgSW50ZXJmYWNlXCJcbiAgICAgICAgQVtcIm_Cfm4gU3RyZWFtbGl0IERhc2hib2FyZFwiXVxuICAgIGVuZFxuXG4gICAgc3ViZ3JhcGggXCJCYWNrZW5kIEFQSVwiXG4gICAgICAgIEJbXCLwn6etIEZhc3RBUEkgU2VydmVyXCJdXG4gICAgZW5kXG5cbiAgICBzdWJncmFwaCBcIkNvcmUgQWdlbnQgTG9naWNcIlxuICAgICAgICBDW1wvwn5Ss4oCIiBGcmF1ZCBUcmlhZ2UgQWdlbnRcIl1cbiAgICAgICAgRFtcIuKYkiBDcmVkaXQgUmlzayBBZ2VudFwiXVxuICAgIGVuZFxuXG4gICAgc3ViZ3JhcGggXCJEYXRhICYgU3VwcG9ydGluZyBNb2RlbHNcIlxuICAgICAgICBFW1wi8J-SnCBQb2xpY3kgRG9jdW1lbnRzIDxicj4gKEFNTCwgS1lDLCBDcmVkaXQpXCJdXG4gICAgICAgIEZbXCLwn5-BIERhdGFiYXNlIDxicj4gKE1vbmdvREIpXCJdXG4gICAgICAgIEdbXCLwn6SVIE1hY2hpbmUgTGVhcm5pbmcgTW9kZWxzXCJdXG4gICAgZW5kXG5cbiAgICBBIC0tIFwiQVBJIENhbGxzIChIVFRQKVwiIC0tPiBCXG4gICAgQiAtLSAgXCJSb3V0ZXMgdG9cIiAtLT4gQ1xuICAgIEIgLS0gIFwiUm91dGVzIHRvXCIgLS0-IERNbiAgICBDIC0tIFwiVXNlc1wiIC0tPiBHXG4gICAgRCAtLSAgXCJEb25zdWx0c1wiIC0tPiBFXG4gICAgQyAtLSAgXCJMb2dzIHRvXCIgLS0-IEZcbiAgICBEIC0tICBcIkxvZ3MgdG9cIiAtLT4gRlxuICAgIFxuICAgIHN0eWxlIEEgZmlsbDojRkY0QjRCLHN0cm9rZTojMzMzLHN0cm9keS13aWR0aDoycHhcbiAgICBzdHlsZSBCLGZpbGw6IzAwNjhDOSxzdHJva2U6IzMzMyxzdHJva2Utd2lkdGg6MnB4XG4gICAgc3R5bGUgQyBmaWxsOiMyRThCNUMsc3Ryb2tlOiMzMzMsc3Ryb2tlLXdpZHRoOjJweFxuICAgIHN0eWxlIEQgZmlsbDojMkU4QjVDLHN0cm9rZTojMzMzLHN0cm9tlLXdpZHRoOjJweFxuICAgIHN0eWxlIEUgZmlsbDojRkZENzAwLHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHhcbiAgICBzdHlsZSBGIGZpbGw6I0RBNzBENTYsc3Ryb2tlOiMzMzMsc3Ryb2tlLXdpZHRoOjJweFxuICAgIHN0eWxlIEcgZmlsbDojRkY2MzQ3LHN0cm9rZTojMzMzLHN0cm9rZS13aWR0aDoycHhcbiIsIm1lcm1haWQiOnt9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlLCJhdXRvU3luYyI6dHJ1ZSwidXBkYXRlRGlhZ3JhbSI6ZmFsc2V9" alt="High-Level Architecture Diagram">
-</div>
+    subgraph "Backend API"
+        B["🚀 FastAPI Server"]
+    end
 
+    subgraph "Core Agent Logic"
+        C["🕵️‍♀️ Fraud Triage Agent"]
+        D["📈 Credit Risk Agent"]
+    end
+
+    subgraph "Data & Supporting Models"
+        E["📜 Policy Documents <br> (AML, KYC, Credit)"]
+        F["💾 Database <br> (MongoDB)"]
+        G["🤖 Machine Learning Models"]
+    end
+
+    A -- "API Calls (HTTP)" --> B
+    B -- "Routes to" --> C
+    B -- "Routes to" --> D
+    C -- "Uses" --> G
+    D -- "Consults" --> E
+    C -- "Logs to" --> F
+    D -- "Logs to" --> F
+    
+    style A fill:#FF4B4B,stroke:#333,stroke-width:2px
+    style B fill:#0068C9,stroke:#333,stroke-width:2px
+    style C fill:#2E8B57,stroke:#333,stroke-width:2px
+    style D fill:#2E8B57,stroke:#333,stroke-width:2px
+    style E fill:#FFD700,stroke:#333,stroke-width:2px
+    style F fill:#DA70D6,stroke:#333,stroke-width:2px
+    style G fill:#FF6347,stroke:#333,stroke-width:2px
 Let's break down what's happening in this diagram:
 
 1.  **The User Interface (Streamlit Dashboard)**: This is the face of our application. A bank employee, like a fraud analyst or a loan officer, interacts with this dashboard. It's a simple web page where they can input data about a transaction or a loan application and see the results from the AI agents. We use **Streamlit** because it's a fantastic Python library for creating data-centric web apps quickly.
