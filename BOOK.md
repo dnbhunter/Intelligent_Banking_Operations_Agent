@@ -1,9 +1,5 @@
 # The Ultimate Guide to the Intelligent Banking Operations Agent 🤖🏦
 
-![Cover Image](https://i.imgur.com/8l6J5d3.png)
-
----
-
 ## **Preface: Who Is This Book For? 🤔**
 
 Welcome, curious reader! Whether you're a budding developer, a student of artificial intelligence, a product manager interested in FinTech, or simply someone fascinated by how modern technology is reshaping the world of finance, this book is for you.
