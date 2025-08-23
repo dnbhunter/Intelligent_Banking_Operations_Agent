@@ -87,12 +87,6 @@ By the end of this book, you'll have a solid understanding of how a modern, AI-p
 
 ***
 
-I have completed the first chapter. I will now mark it as completed and start working on Chapter 2.
-Ran tool
-Excellent! Let's move on to the next chapter and get this project running on your local machine.
-
-***
-
 ## **Chapter 2: Getting Started - Your Local Setup 💻**
 
 This chapter is all about getting your hands dirty! We'll walk through the steps to get the "Intelligent Banking Operations Agent" project running on your own computer using a standard Python virtual environment. This will allow you to experiment with the code, see the agents in action, and follow along with the deep dives in later chapters.
