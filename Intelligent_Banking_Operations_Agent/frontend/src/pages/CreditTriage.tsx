@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import PageHeader from '@/components/PageHeader'
 import Button from '@/components/Button'
+import { Card, CardContent, CardHeader } from '@/components/ui/Card'
+import { Input, Select } from '@/components/ui/Inputs'
 import { CreditPayloadSchema, type CreditPayload } from '@/lib/schemas'
 import { runCreditTriage } from '@/lib/api'
 import { useAppStore } from '@/store/useAppStore'
@@ -41,19 +43,26 @@ export default function CreditTriage(){
 			<PageHeader title="Credit Triage" subtitle="Scorecard and affordability with policy gating" actions={<Button variant='subtle' onClick={()=>reset()}>Reset form</Button>} />
 			<div className="grid grid-cols-12 gap-6">
 				<form className="col-span-12 md:col-span-6 space-y-4" onSubmit={handleSubmit(onSubmit)} aria-label="Credit Triage Form">
-					<div className="grid grid-cols-2 gap-4">
-						<label className="flex flex-col gap-1 text-sm">Monthly Income<input step="100" type="number" {...register('income', { valueAsNumber: true })} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.income && <span className="text-red-400">{errors.income.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Monthly Liabilities<input step="50" type="number" {...register('liabilities', { valueAsNumber: true })} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.liabilities && <span className="text-red-400">{errors.liabilities.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm col-span-2">Delinquency Flags<select multiple {...register('delinquency_flags')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2 h-28">
-							<option>30+ days</option>
-							<option>60+ days</option>
-							<option>90+ days</option>
-							<option>bankruptcy</option>
-							<option>charge-off</option>
-						</select>{errors.delinquency_flags && <span className="text-red-400">{errors.delinquency_flags.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Requested Limit<input step="50" type="number" {...register('requested_limit', { valueAsNumber: true })} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.requested_limit && <span className="text-red-400">{errors.requested_limit.message}</span>}</label>
-					</div>
-					<Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Running…' : 'Run Credit Triage'}</Button>
+					<Card>
+						<CardHeader title="Application" subtitle="Applicant financials" />
+						<CardContent>
+							<div className="grid grid-cols-2 gap-4">
+								<Input step="100" type="number" {...register('income', { valueAsNumber: true })} label="Monthly Income" />{errors.income && <span className="text-red-400">{errors.income.message}</span>}
+								<Input step="50" type="number" {...register('liabilities', { valueAsNumber: true })} label="Monthly Liabilities" />{errors.liabilities && <span className="text-red-400">{errors.liabilities.message}</span>}
+								<label className="flex flex-col gap-1 text-sm col-span-2">Delinquency Flags<select multiple {...register('delinquency_flags')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2 h-28">
+									<option>30+ days</option>
+									<option>60+ days</option>
+									<option>90+ days</option>
+									<option>bankruptcy</option>
+									<option>charge-off</option>
+								</select>{errors.delinquency_flags && <span className="text-red-400">{errors.delinquency_flags.message}</span>}</label>
+								<Input step="50" type="number" {...register('requested_limit', { valueAsNumber: true })} label="Requested Limit" />{errors.requested_limit && <span className="text-red-400">{errors.requested_limit.message}</span>}
+							</div>
+							<div className="mt-4">
+								<Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Running…' : 'Run Credit Triage'}</Button>
+							</div>
+						</CardContent>
+					</Card>
 				</form>
 				<div className="col-span-12 md:col-span-6">
 					<AnimatePresence mode="wait">

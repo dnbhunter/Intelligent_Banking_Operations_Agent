@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import PageHeader from '@/components/PageHeader'
 import Button from '@/components/Button'
+import { Card, CardContent, CardHeader } from '@/components/ui/Card'
+import { Input, Select } from '@/components/ui/Inputs'
 import { FraudPayloadSchema, type FraudPayload } from '@/lib/schemas'
 import { runFraudTriage } from '@/lib/api'
 import { useAppStore } from '@/store/useAppStore'
@@ -45,17 +47,24 @@ export default function FraudTriage(){
 			<PageHeader title="Fraud Triage" subtitle="Run triage with explainable rationale" actions={<Button variant='subtle' onClick={()=>reset()}>Reset form</Button>} />
 			<div className="grid grid-cols-12 gap-6">
 				<form className="col-span-12 md:col-span-6 space-y-4" onSubmit={handleSubmit(onSubmit)} aria-label="Fraud Triage Form">
-					<div className="grid grid-cols-2 gap-4">
-						<label className="flex flex-col gap-1 text-sm">Amount<input step="1" type="number" {...register('amount', { valueAsNumber: true })} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.amount && <span className="text-red-400">{errors.amount.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Currency<select {...register('currency')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2"><option>USD</option><option>EUR</option><option>INR</option></select>{errors.currency && <span className="text-red-400">{errors.currency.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Merchant<input {...register('merchant')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.merchant && <span className="text-red-400">{errors.merchant.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">MCC<input {...register('mcc')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.mcc && <span className="text-red-400">{errors.mcc.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Geo<input {...register('geo')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.geo && <span className="text-red-400">{errors.geo.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Device ID<input {...register('device_id')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.device_id && <span className="text-red-400">{errors.device_id.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Account ID<input {...register('account_id')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2" />{errors.account_id && <span className="text-red-400">{errors.account_id.message}</span>}</label>
-						<label className="flex flex-col gap-1 text-sm">Channel<select {...register('channel')} className="focus-ring rounded bg-neutral-900 border border-border/60 px-3 py-2"><option>ecommerce</option><option>pos</option><option>atm</option><option>p2p</option></select>{errors.channel && <span className="text-red-400">{errors.channel.message}</span>}</label>
-					</div>
-					<Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Running…' : 'Run Fraud Triage'}</Button>
+					<Card>
+						<CardHeader title="Transaction" subtitle="Enter transaction details" />
+						<CardContent>
+							<div className="grid grid-cols-2 gap-4">
+								<Input type="number" step="1" {...register('amount', { valueAsNumber: true })} label="Amount" />{errors.amount && <span className="text-red-400">{errors.amount.message}</span>}
+								<Select {...register('currency')} label="Currency"><option>USD</option><option>EUR</option><option>INR</option></Select>{errors.currency && <span className="text-red-400">{errors.currency.message}</span>}
+								<Input {...register('merchant')} label="Merchant" />{errors.merchant && <span className="text-red-400">{errors.merchant.message}</span>}
+								<Input {...register('mcc')} label="MCC" />{errors.mcc && <span className="text-red-400">{errors.mcc.message}</span>}
+								<Input {...register('geo')} label="Geo" />{errors.geo && <span className="text-red-400">{errors.geo.message}</span>}
+								<Input {...register('device_id')} label="Device ID" />{errors.device_id && <span className="text-red-400">{errors.device_id.message}</span>}
+								<Input {...register('account_id')} label="Account ID" />{errors.account_id && <span className="text-red-400">{errors.account_id.message}</span>}
+								<Select {...register('channel')} label="Channel"><option>ecommerce</option><option>pos</option><option>atm</option><option>p2p</option></Select>{errors.channel && <span className="text-red-400">{errors.channel.message}</span>}
+							</div>
+							<div className="mt-4">
+								<Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Running…' : 'Run Fraud Triage'}</Button>
+							</div>
+						</CardContent>
+					</Card>
 				</form>
 				<div className="col-span-12 md:col-span-6">
 					<AnimatePresence mode="wait">
