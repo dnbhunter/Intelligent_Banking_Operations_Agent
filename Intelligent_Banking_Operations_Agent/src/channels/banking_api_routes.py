@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from src.agents.fraud_triage_agent import FraudTriageAgent
 from src.fraud_detection.feature_engineering import HistoricalTxn
 from src.agents.credit_risk_agent import CreditRiskAgent
+from src.agents.langgraph_workflow import TriageOrchestrator
 
 router = APIRouter(tags=["banking"])
 
@@ -78,5 +79,16 @@ async def analytics_kpis():
 		"sla_ms": None,
 		"band_distribution": {"low": 0, "medium": 0, "high": 0},
 	}
+
+
+class TriageInput(BaseModel):
+	payload: dict
+
+
+@router.post("/triage")
+async def unified_triage(body: TriageInput):
+	orchestrator = TriageOrchestrator()
+	result = orchestrator.invoke(body.payload)
+	return result
 
 
