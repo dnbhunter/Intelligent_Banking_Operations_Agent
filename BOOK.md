@@ -50,13 +50,8 @@ These agents work together, orchestrated by a **supervisor**, to handle requests
 
 Before we dive deep, let's look at the project from a bird's-eye view. The system is composed of a few key parts that talk to each other.
 
-Here is a diagram representing the current architecture of the system:
+Here is a diagram representing the current high-level architecture of the system:
 
-My apologies again for the diagram errors. Mermaid syntax can be a bit particular. I'll generate a corrected version of the architecture diagram, and then we will continue with our book.
-
-Here's the corrected diagram:
-Ran tool
-My apologies for the repeated errors with the diagram. It seems I was having some trouble with the Mermaid syntax. Third time's the charm! Here is the corrected high-level architecture diagram.
 <img width="1785" height="1015" alt="image" src="https://github.com/user-attachments/assets/8e194c09-98c0-4fbd-a55f-5b492e6c7fb9" />
 
 Let's break down what's happening in this diagram:
