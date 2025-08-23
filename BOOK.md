@@ -52,9 +52,31 @@ Before we dive deep, let's look at the project from a bird's-eye view. The syste
 
 Here is a diagram representing the current high-level architecture of the system:
 
-**[NOTE TO USER: Please replace this text and the image below with the first Mermaid diagram I generated for the High-Level Architecture.]**
+```mermaid
+graph LR
+    subgraph "User Interaction"
+        UI["React Frontend"]
+    end
 
-<img width="1785" height="1015" alt="image" src="https://github.com/user-attachments/assets/8e194c09-98c0-4fbd-a55f-5b492e6c7fb9" />
+    subgraph "Backend System"
+        API["FastAPI Backend"]
+        Supervisor["Banking Supervisor Agent"]
+        Agents["Specialist Agents<br/>(Fraud, Credit, Compliance)"]
+    end
+
+    subgraph "Knowledge & Data"
+        ML["ML Models"]
+        Policies["Policy Documents (RAG)"]
+        DB["Database"]
+    end
+
+    UI -- "API Calls" --> API
+    API -- "Requests" --> Supervisor
+    Supervisor -- "Routes to" --> Agents
+    Agents -- "Use" --> ML
+    Agents -- "Consult" --> Policies
+    Agents -- "Access" --> DB
+```
 
 Let's break down what's happening in this diagram:
 
@@ -239,9 +261,34 @@ Every great project is built on the shoulders of powerful tools and frameworks. 
 
 Here's a diagram summarizing the main components of our tech stack:
 
-**[NOTE TO USER: Please replace this text and the image below with the second Mermaid diagram I generated for the Tech Stack.]**
+```mermaid
+graph TD
+    subgraph "Frontend"
+        A["React & Vite"]
+        B["TypeScript"]
+        C["Tailwind CSS"]
+        D["Zustand (State)"]
+    end
 
-<img width="1729" height="663" alt="image" src="https://github.com/user-attachments/assets/7b38004a-0890-4b70-b968-9ef2a9287751" />
+    subgraph "Backend"
+        E["FastAPI"]
+    end
+    
+    subgraph "AI / Orchestration"
+        F["LangChain & LangGraph"]
+        G["OpenAI Models"]
+    end
+
+    subgraph "Data & ML"
+        H["Pandas & Scikit-learn"]
+        I["ChromaDB (Vector Store)"]
+    end
+
+    subgraph "Infrastructure"
+        J["Python venv"]
+        K["Node.js & npm"]
+    end
+```
 
 
 ### **1. Backend: FastAPI**
@@ -904,227 +951,4 @@ Let's break down the `frontend/` directory to see how the UI is constructed.
 #### **1. Project Structure**
 
 The frontend code is organized into several key directories inside `frontend/src`:
-*   `pages/`: Contains the top-level components for each main view of the application (`FraudTriage.tsx`, `CreditTriage.tsx`, `Analytics.tsx`).
-*   `components/`: Contains reusable UI elements like `Button.tsx`, `PageHeader.tsx`, and `CodeBlock.tsx` that are used across different pages.
-*   `lib/`: Contains application logic that isn't a UI component, such as API communication (`api.ts`) and data validation schemas (`schemas.ts`).
-*   `store/`: Contains the global state management logic using Zustand (`useAppStore.ts`).
-*   `App.tsx`: The main application component that sets up the layout, header, and routing.
-*   `main.tsx`: The entry point of the React application.
-
-#### **2. Routing and Navigation**
-
-The application uses `react-router-dom` to handle navigation between pages. In `App.tsx`, we define the routes:
-```tsx
-// src/App.tsx
-<Routes>
-    <Route path="/" element={<FraudTriage />} />
-    <Route path="/credit" element={<CreditTriage />} />
-    <Route path="/analytics" element={<Analytics />} />
-</Routes>
-```
-The header contains `NavLink` components that allow the user to switch between these pages without a full browser refresh, creating a smooth single-page application (SPA) experience.
-
-#### **3. Forms and Data Validation**
-
-Let's look at the "Fraud Triage" form in `src/pages/FraudTriage.tsx` as an example.
-The form is built using a combination of powerful libraries:
-*   **React Hook Form (`useForm`)**: Manages the form state, handles submissions, and tracks validation errors efficiently.
-*   **Zod (`FraudPayloadSchema`)**: Defines the expected shape and data types of the form data in a clear, TypeScript-native way.
-*   **Zod Resolver (`@hookform/resolvers/zod`)**: Connects Zod schemas directly to React Hook Form, providing seamless and robust validation.
-
-```tsx
-// src/pages/FraudTriage.tsx
-const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FraudPayload>({
-    resolver: zodResolver(FraudPayloadSchema),
-    // ... default values
-});
-```
-This setup ensures that the user cannot submit the form with invalid or missing data, and it provides clear error messages for each field.
-
-#### **4. The API Call and Displaying Results**
-
-The action happens when the user clicks the "Run Fraud Triage" button.
-```tsx
-// src/pages/FraudTriage.tsx
-const onSubmit = async (data: FraudPayload) => {
-    try {
-        const resp = await runFraudTriage(data); // 1. API call
-        setResult(resp);                          // 2. Update local state
-        setFraud(data, resp);                     // 3. Update global state
-        toast.success(`Fraud: ${resp.decision}`); // 4. Show notification
-    } catch (error) {
-        toast.error('An unexpected error occurred.');
-    }
-}
-```
-1.  **Making the Request**: The `onSubmit` function calls `runFraudTriage` from `src/lib/api.ts`. This function constructs the appropriate HTTP POST request and sends the validated form payload to our FastAPI backend.
-2.  **Updating State**: The response from the API is stored in both the local page state (`result`) to display it immediately, and in the global Zustand store (`setFraud`) to make it available to other components (like the Analytics page).
-3.  **User Feedback**: `sonner` is used to show a "toast" notification at the top of the screen, giving the user immediate feedback on the result.
-4.  **Displaying Output**: The component uses conditional rendering to display the API response. The `AnimatePresence` and `motion` components from `framer-motion` add a subtle fade-and-slide animation for a polished feel.
-
-#### **5. A Tool for Humans**
-
-The React dashboard is more than just a demo; it's a crucial part of the human-in-the-loop process.
-*   **For Analysts**: It provides a straightforward way to get a "second opinion" from the AI agents on a tricky case.
-*   **For Developers**: It's an invaluable tool for testing and debugging the backend agents in a way that's much more intuitive than using the raw API docs.
-*   **For Auditors**: It provides a transparent window into the decision-making process, showing the exact inputs and the detailed, reasoned outputs.
-
-This well-structured and interactive dashboard effectively bridges the gap between the complex AI in the backend and the human expert who needs to use and trust it.
-
-***
-
-We have now completed our journey through the entire application, from the user's first click on the dashboard to the complex reasoning of the AI agents and back. In our final chapter, we'll look to the horizon, discussing the future of this project and how you can be a part of it.
-
-## **Chapter 10: Future Directions and How to Contribute 🔭**
-
-Congratulations on making it this far! You've taken a comprehensive tour of the Intelligent Banking Operations Agent, from the high-level architecture down to the individual lines of code that power its intelligence. You understand the "what" and the "how." In this final chapter, we'll explore the "what's next."
-
-A project like this is never truly "finished." It's a foundation—a powerful one—upon which many new and exciting capabilities can be built. Here, we'll outline the roadmap for the project's evolution and invite you to be a part of its future.
-
-### **The Immediate Roadmap: Fulfilling the Vision**
-
-The most important next step is to transition the project from its current "hackathon scope" to the full multi-agent vision we've discussed throughout this book.
-
-#### **1. Full Integration of the `BankingSupervisor`**
-
-*   **What**: Refactor the API to have a single `/triage` endpoint that routes all incoming requests to the `BankingSupervisor`.
-*   **How**:
-    *   Implement the logic in `langgraph_workflow.py`. This file will define the state graph for the agentic workflow.
-    *   The supervisor will first call its `classify` method (which could be upgraded to use an LLM for more nuanced classification).
-    *   Based on the intent, LangGraph will route the request to the appropriate specialist agent (`FraudTriageAgent`, `CreditRiskAgent`, etc.).
-    *   The specialist agent will execute its logic and return its findings to the graph.
-    *   The graph will then return the final, structured response through the API.
-*   **Why**: This will make the system much more scalable and flexible. Adding a new agent will simply mean adding a new node to the graph and a new classification intent to the supervisor, with minimal changes to the API layer.
-
-#### **2. Activating the `ComplianceRAGAgent`**
-
-*   **What**: Fully integrate the RAG agent as a tool for the other agents to use.
-*   **How**:
-    *   Modify the `triage` methods of the `FraudTriageAgent` and `CreditRiskAgent`.
-    *   After their core logic runs, they will call the `ComplianceRAGAgent.cite()` method with a query relevant to their findings (e.g., "policy on high velocity transactions" or "affordability rules for DTI over 50%").
-    *   The retrieved policy snippets will be used to generate a rich, policy-grounded rationale, likely using an LLM as described in previous chapters (e.g., by populating the `FRAUD_RATIONALE_TEMPLATE`).
-*   **Why**: This is the key to building a truly auditable and trustworthy AI system. Decisions will be explicitly tied to the source-of-truth policy documents.
-
-#### **3. Enhancing the Agents' Toolkits**
-
-*   **What**: Give the agents more tools to interact with the outside world.
-*   **How**:
-    *   **Database Connectivity**: Create a tool that allows agents to read from and write to the database. For example, the `FraudTriageAgent` could fetch the real transaction history for an account instead of relying on a demo history. The `CreditRiskAgent` could retrieve a customer's full profile.
-    *   **Third-Party API Calls**: Create tools that connect to external services, for example, to check a customer's credit score from a credit bureau.
-*   **Why**: This will transform the agents from working on isolated, sample data to operating on real-world, dynamic information, dramatically increasing their effectiveness.
-
-### **The Long-Term Vision: New Agents and Capabilities**
-
-Once the core multi-agent framework is in place, the possibilities are nearly endless. We can expand the team of agents to cover more and more banking operations.
-
-Here's a diagram illustrating a potential future, expanded agent team:
-
-<img width="1635" height="561" alt="image" src="https://github.com/user-attachments/assets/dd101897-1b88-4c86-a9f9-20a0b9eb3940" />
-
-
-Potential new agents could include:
-*   **KYC (Know Your Customer) Onboarding Agent**: An agent that can process new customer applications, perhaps even using multi-modal models to analyze uploaded ID documents.
-*   **AML (Anti-Money Laundering) Monitoring Agent**: A more sophisticated agent that looks at patterns of transactions over time to detect potential money laundering schemes.
-*   **Customer Service Agent**: An agent that can be exposed to a customer-facing chatbot to answer questions about their account, transaction history, or bank policies.
-
-### **How You Can Contribute**
-
-Whether you're a developer, a data scientist, a designer, or just an enthusiast, you can contribute to this project's journey.
-1.  **Set up the project locally**: Follow the steps in Chapter 2 to get the project running. Experiment with it.
-2.  **Explore the code**: Use this book as a guide to dive into the codebase. Understand how the pieces fit together.
-3.  **Identify an area for improvement**: Maybe you have an idea for a new rule in the `FraudTriageAgent`. Perhaps you can improve the React UI. Or maybe you want to take a shot at implementing the `LangGraph` workflow.
-4.  **Engage with the project**: *(This section would typically include links to the project's GitHub repository, issue tracker, and contribution guidelines).*
-
-The journey of building intelligent systems is a marathon, not a sprint. By starting with this solid foundation and iteratively adding new capabilities, this project can evolve into a comprehensive and powerful platform for transforming banking operations.
-
-Thank you for joining us on this tour. We hope you're as excited about the future of AI in finance as we are. Happy building!
-
-***
-
-This concludes the book on the Intelligent Banking Operations Agent! I have now provided a full, ten-chapter guide with diagrams, code explanations, a future roadmap, and a helpful appendix.
-
-I will now mark the final task as complete. I hope this comprehensive guide is exactly what you were looking for! 🚀
-
-## **Appendix**
-
-### **A. Glossary of Terms**
-
-*   **API (Application Programming Interface)**: A set of rules and protocols that allows different software applications to communicate with each other. Our project uses a FastAPI web API.
-*   **Agent (AI Agent)**: An autonomous computational entity, powered by an LLM, designed to perform specific tasks. It has a defined role, access to tools, and a reasoning engine.
-*   **AML (Anti-Money Laundering)**: A set of laws, regulations, and procedures intended to prevent criminals from disguising illegally obtained funds as legitimate income.
-*   **ChromaDB**: An open-source vector database used to store and retrieve embeddings for our RAG system.
-*   **DTI (Debt-to-Income Ratio)**: A personal finance measure that compares an individual's monthly debt payment to their monthly gross income. A key metric in credit risk assessment.
-*   **Embedding**: A numerical representation (a vector) of a piece of data, like text. The vector captures the semantic meaning, allowing for similarity searches.
-*   **FastAPI**: A high-performance Python web framework used to build the project's backend API.
-*   **Feature Engineering**: The process of using domain knowledge to create new input features for a machine learning model from the raw data. Our fraud and credit agents both perform feature engineering.
-*   **Git**: A distributed version control system used for tracking changes in source code during software development.
-*   **KYC (Know Your Customer)**: A standard in the financial industry that requires institutions to verify the identity of their clients to prevent identity theft, fraud, money laundering, and terrorist financing.
-*   **LangChain**: A framework for developing applications powered by Large Language Models (LLMs).
-*   **LangGraph**: An extension of LangChain used to build stateful, multi-agent applications by defining workflows as a graph.
-*   **LLM (Large Language Model)**: A type of artificial intelligence model (like OpenAI's GPT-4) trained on vast amounts of text data to understand and generate human-like language.
-*   **MCC (Merchant Category Code)**: A four-digit number assigned to a business by credit card companies. Certain MCCs are considered higher risk for fraud.
-*   **Pydantic**: A Python library for data validation and settings management, used heavily by FastAPI.
-*   **RAG (Retrieval-Augmented Generation)**: An AI technique that improves the quality of LLM responses by first retrieving relevant information from an external knowledge source (like our policy documents) and providing it to the model as context.
-*   **React**: A JavaScript library for building user interfaces. It's the core of our frontend application.
-*   **Scorecard**: A simple, rule-based model used in credit risk to assign a score to an applicant based on various risk factors.
-*   **Tailwind CSS**: A utility-first CSS framework used for styling the frontend application.
-*   **TypeScript**: A superset of JavaScript that adds static typing, improving code quality and maintainability in our frontend.
-*   **Vector Database**: A specialized database designed to store and query high-dimensional vectors, like the ones generated by embedding models.
-*   **Vite**: A modern frontend build tool that provides a fast development experience and bundles the React application for production.
-*   **Z-Score**: A statistical measurement that describes a value's relationship to the mean of a group of values, measured in terms of standard deviations. Used in our fraud agent to detect anomalous transaction amounts.
-*   **Zustand**: A small, fast, and scalable state-management library for React, used in our frontend.
-
-### **B. Full Project Directory Structure**
-
-```
-Intelligent_Banking_Operations_Agent/
-├── BOOK.md
-├── Intelligent_Banking_Operations_Agent/
-│   ├── data/
-│   │   ├── policies/
-│   │   │   ├── AML.txt
-│   │   │   ├── CreditPolicy.txt
-│   │   │   └── KYC.txt
-│   │   └── sample_banking_data.json
-│   ├── frontend/
-│   │   ├── package.json
-│   │   ├── vite.config.ts
-│   │   ├── tsconfig.json
-│   │   ├── tailwind.config.js
-│   │   ├── postcss.config.js
-│   │   ├── index.html
-│   │   └── src/
-│   │       ├── App.tsx
-│   │       ├── main.tsx
-│   │       ├── components/
-│   │       ├── lib/
-│   │       ├── pages/
-│   │       ├── store/
-│   │       └── styles/
-│   ├── main.py
-│   └── src/
-│       ├── agents/
-│       ├── channels/
-│       ├── core/
-│       ├── credit_risk/
-│       ├── fraud_detection/
-│       ├── models/
-│       └── rag/
-├── README.md
-└── requirements.txt
-```
-
-### **C. Further Reading and Resources**
-
-*   **FastAPI**: [Official Documentation](https://fastapi.tiangolo.com/)
-*   **React**: [Official Documentation](https://react.dev/)
-*   **Vite**: [Official Documentation](https://vitejs.dev/)
-*   **LangChain & LangGraph**: [Official Documentation](https://python.langchain.com/)
-*   **Python Virtual Environments**: [Official Documentation](https://docs.python.org/3/library/venv.html)
-*   **Retrieval-Augmented Generation (RAG)**: [Blog post from the LangChain team](https://blog.langchain.dev/retrieval-augmented-generation-rag/)
-
-***
-
-This concludes the book on the Intelligent Banking Operations Agent! I have now provided a full, ten-chapter guide with diagrams, code explanations, a future roadmap, and a helpful appendix.
-
-I will now mark the final task as complete. I hope this comprehensive guide is exactly what you were looking for! 🚀
+*   `pages/`: Contains the top-level components for each main view of the application (`FraudTriage.tsx`, `
