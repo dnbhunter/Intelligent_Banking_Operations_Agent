@@ -22,15 +22,17 @@ const API_BASE = (import.meta as any).env?.VITE_API_BASE ?? 'http://127.0.0.1:80
 
 export async function runFraudTriage(payload: FraudPayload): Promise<{ decision: 'approve'|'review'|'decline', score: number, reasons: string[], sla_ms?: number }> {
 	if (!USE_MOCKS) {
-		const resp = await fetch(`${API_BASE}/fraud/triage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-			account_id: payload.account_id,
-			amount: payload.amount,
-			currency: payload.currency,
-			merchant: payload.merchant,
-			mcc: payload.mcc,
-			geo: payload.geo,
-			device_id: payload.device_id,
-			channel: payload.channel,
+		const resp = await fetch(`${API_BASE}/triage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+			payload: {
+				account_id: payload.account_id,
+				amount: payload.amount,
+				currency: payload.currency,
+				merchant: payload.merchant,
+				mcc: payload.mcc,
+				geo: payload.geo,
+				device_id: payload.device_id,
+				channel: payload.channel,
+			}
 		}) })
 		const json = await resp.json()
 		const decision: 'approve'|'review'|'decline' = json.risk_band === 'high' ? 'decline' : json.risk_band === 'medium' ? 'review' : 'approve'
@@ -50,12 +52,14 @@ export async function runFraudTriage(payload: FraudPayload): Promise<{ decision:
 
 export async function runCreditTriage(payload: CreditPayload): Promise<{ decision: 'approve'|'conditional'|'decline', limit_suggested: number, dti: number, reasons: string[] }> {
 	if (!USE_MOCKS) {
-		const resp = await fetch(`${API_BASE}/credit/triage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-			applicant_id: 'app-ui',
-			income: payload.income,
-			liabilities: payload.liabilities,
-			delinquency_flags: payload.delinquency_flags,
-			requested_limit: payload.requested_limit,
+		const resp = await fetch(`${API_BASE}/triage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+			payload: {
+				applicant_id: 'app-ui',
+				income: payload.income,
+				liabilities: payload.liabilities,
+				delinquency_flags: payload.delinquency_flags,
+				requested_limit: payload.requested_limit,
+			}
 		}) })
 		const json = await resp.json()
 		const decision: 'approve'|'conditional'|'decline' = json.decision === 'approve' ? 'approve' : json.decision === 'review' ? 'conditional' : 'decline'
