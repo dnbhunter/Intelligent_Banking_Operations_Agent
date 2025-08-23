@@ -17,10 +17,11 @@ const rng = (seed: string) => {
 	}
 }
 
-const USE_MOCKS = (import.meta as any).env?.VITE_USE_MOCKS !== 'false'
+// Default to real backend unless explicitly opted into mocks
+const USE_MOCKS = ((import.meta as any).env?.VITE_USE_MOCKS ?? 'false') === 'true'
 const API_BASE = (import.meta as any).env?.VITE_API_BASE ?? 'http://127.0.0.1:8000/api/v1'
 
-export async function runFraudTriage(payload: FraudPayload): Promise<{ decision: 'approve'|'review'|'decline', score: number, reasons: string[], sla_ms?: number }> {
+export async function runFraudTriage(payload: FraudPayload): Promise<{ decision: 'approve'|'review'|'decline', score: number, reasons: string[], risk_band?: 'low'|'medium'|'high', summary?: string, explanations?: string[], sla_ms?: number }> {
 	if (!USE_MOCKS) {
 		const resp = await fetch(`${API_BASE}/triage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
 			payload: {
@@ -36,7 +37,7 @@ export async function runFraudTriage(payload: FraudPayload): Promise<{ decision:
 		}) })
 		const json = await resp.json()
 		const decision: 'approve'|'review'|'decline' = json.risk_band === 'high' ? 'decline' : json.risk_band === 'medium' ? 'review' : 'approve'
-		return { decision, score: Math.round((json.alert_score ?? 0)*100), reasons: json.rule_hits ?? [], sla_ms: undefined }
+		return { decision, score: Math.round((json.alert_score ?? 0)*100), reasons: (json.explanations ?? json.rule_hits ?? []), risk_band: json.risk_band, summary: json.summary, explanations: json.explanations, sla_ms: undefined }
 	}
 	await sleep(600)
 	const seed = JSON.stringify(payload)

@@ -33,7 +33,9 @@ export default function FraudTriage(){
 			const resp = await runFraudTriage(data)
 			setResult(resp as any)
 			setFraud(data, resp)
-			toast.success(`Fraud: ${resp.decision} - Score ${resp.score}`)
+			const band = (resp as any).risk_band ? ((resp as any).risk_band as string).toUpperCase() : 'N/A'
+			const score = typeof resp.score === 'number' ? resp.score : Math.round(((resp as any).alert_score ?? 0)*100)
+			toast.success(`Fraud: ${band} • ${resp.decision} • ${score}/100`)
 		} catch (error) {
 			console.error(error)
 			toast.error('An unexpected error occurred.', {
@@ -71,11 +73,16 @@ export default function FraudTriage(){
 						{result ? (
 							<motion.div key="result" initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -6}} transition={{duration: 0.15}} className="rounded border border-border/60 p-4 bg-neutral-950">
 								<div className="flex items-center gap-3 mb-2">
-									<span className={`px-2 py-1 rounded text-xs ${result.decision==='approve'?'bg-green-600':result.decision==='review'?'bg-amber-600':'bg-red-600'}`}>{(result as any).decision}</span>
-									<div className="text-sm text-gray-300">Score {(result as any).score}</div>
+									<span className={`px-2 py-1 rounded text-xs ${((result as any).risk_band||'low')==='low'?'bg-green-600':((result as any).risk_band||'')==='medium'?'bg-amber-600':'bg-red-600'}`}>{(((result as any).risk_band)||'LOW').toString().toUpperCase()} RISK</span>
+									<div className="text-sm text-gray-300">Score {Math.round((((result as any).alert_score ?? 0)*100) || ((result as any).score ?? 0))}/100</div>
+									<div className="ml-auto text-xs text-gray-400">Decision {(result as any).decision}</div>
 								</div>
+								{(result as any).summary && (
+									<div className="text-sm text-gray-100 mb-2">{(result as any).summary}</div>
+								)}
+								<div className="text-xs text-gray-400 mb-2">Explainable rationale</div>
 								<ul className="list-disc pl-5 text-sm">
-									{(result as any).reasons?.map((r:string, i:number)=>(<li key={i}>{r}</li>))}
+									{(((result as any).explanations) || (result as any).reasons || []).map((r:string, i:number)=>(<li key={i}>{r}</li>))}
 								</ul>
 								{(result as any).sla_ms && <div className="text-xs text-gray-400 mt-2">SLA {(result as any).sla_ms} ms</div>}
 							</motion.div>

@@ -31,14 +31,38 @@ def fraud_node(state: TriageState) -> dict[str, Any]:
 		device_id=payload.get("device_id"),
 		history=[],
 	)
+	# Build human-friendly explanations and summary for unified endpoint
+	features = getattr(result, "features", {}) or {}
+	explanations: list[str] = []
+	if features.get("amount_zscore", 0.0) >= 3.5:
+		explanations.append(f"Transaction amount is {features['amount_zscore']:.1f}σ above the account's average")
+	if features.get("geo_novelty", 0.0) >= 1.0:
+		explanations.append("Transaction originates from a new or high-risk geographical location")
+	if features.get("device_novelty", 0.0) >= 1.0:
+		explanations.append("Device ID has not been seen on this account before")
+	if features.get("high_risk_mcc", 0.0) >= 1.0 and payload.get("mcc"):
+		explanations.append(f"Merchant Category ({payload.get('mcc')}) is flagged as high-risk")
+	if features.get("velocity_1h_count", 0.0) >= 5:
+		explanations.append("High transaction velocity in the last 1 hour")
+	for hit in getattr(result, "rule_hits", []) or []:
+		if hit not in explanations:
+			explanations.append(hit)
+	risk_score = round(float(getattr(result, "alert_score", 0.0)) * 100)
+	risk_band = getattr(result, "risk_band", "low")
+	risk_label = risk_band.capitalize()
+	decision_human = "Manual review recommended" if risk_band in {"medium", "high"} else "Approve"
+	summary = f"{risk_label} Risk ({risk_score}/100): {decision_human}."
 	return {
 		"result": {
 			"alert_score": result.alert_score,
 			"decision": result.decision,
 			"rationale": result.rationale,
 			"policy_citations": result.policy_citations,
-			"features": result.features,
+			"features": features,
 			"risk_band": result.risk_band,
+			"explanations": explanations,
+			"summary": summary,
+			"rule_hits": getattr(result, "rule_hits", []),
 		},
 	}
 
