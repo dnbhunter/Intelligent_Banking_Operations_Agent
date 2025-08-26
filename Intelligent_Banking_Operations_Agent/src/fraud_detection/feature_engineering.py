@@ -69,6 +69,10 @@ def build_features(current_amount: float, now: datetime, mcc: str | None, geo: s
 		"device_novelty": device_novelty(device_id, history),
 		"geo_novelty": geo_distance_flag(geo, history),
 		"high_risk_mcc": 1.0 if mcc in {"4829", "6011", "7995", "5944"} else 0.0,
+		# Additional simple features
+		"hour_of_day": float(now.hour),
+		"is_night": 1.0 if (now.hour < 6 or now.hour >= 22) else 0.0,
+		"first_time_mcc": 0.0 if any((h.mcc == mcc) for h in history) else (0.0 if mcc is None else 1.0),
 	}
 	return feat
 

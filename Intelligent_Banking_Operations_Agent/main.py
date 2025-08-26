@@ -1,8 +1,15 @@
 import logging
 import os
+import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+
+# Ensure local package imports resolve when launched from repo root or other cwd
+CURRENT_DIR = os.path.dirname(__file__)
+if CURRENT_DIR not in sys.path:
+	sys.path.insert(0, CURRENT_DIR)
 
 from src.core.config import get_settings
 
@@ -55,13 +62,21 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/health")
 async def root():
 	return {"status": "ok", "service": "banking-ops"}
 
 
 if banking_router is not None:
 	app.include_router(banking_router, prefix="/api/v1")
+
+# Serve built frontend if available
+frontend_dist = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+if os.path.isdir(frontend_dist):
+	try:
+		app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+	except Exception:
+		pass
 
 
 def run():

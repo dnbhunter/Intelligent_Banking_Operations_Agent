@@ -27,7 +27,9 @@ export const AnalyticsSchema = z.object({
 	recall: z.number().nullable(),
 	alert_volumes: z.number(),
 	sla_ms: z.number().nullable(),
-	band_distribution: z.object({ low: z.number(), medium: z.number(), high: z.number() })
+	band_distribution: z.object({ low: z.number(), medium: z.number(), high: z.number() }),
+	vdr: z.number().optional(),
+	confusion: z.object({ tp: z.number(), fp: z.number(), tn: z.number(), fn: z.number() }).optional()
 })
 
 export type AnalyticsData = z.infer<typeof AnalyticsSchema>

@@ -6,6 +6,10 @@ from langgraph.graph import StateGraph, END
 
 from src.agents.banking_supervisor import BankingSupervisor
 from src.agents.fraud_triage_agent import FraudTriageAgent
+from time import perf_counter
+from uuid import uuid4
+from datetime import datetime
+from src.fraud_detection.telemetry import record_event, TriageEvent
 from src.agents.credit_risk_agent import CreditRiskAgent
 
 
@@ -23,6 +27,7 @@ def supervisor_node(state: TriageState) -> dict[str, Any]:
 
 def fraud_node(state: TriageState) -> dict[str, Any]:
 	payload = state["payload"]
+	started = perf_counter()
 	agent = FraudTriageAgent()
 	result = agent.triage(
 		amount=float(payload.get("amount", 0.0)),
@@ -31,6 +36,8 @@ def fraud_node(state: TriageState) -> dict[str, Any]:
 		device_id=payload.get("device_id"),
 		history=[],
 	)
+	sla_ms = int((perf_counter() - started) * 1000)
+	event_id = str(uuid4())
 	# Build human-friendly explanations and summary for unified endpoint
 	features = getattr(result, "features", {}) or {}
 	explanations: list[str] = []
@@ -52,8 +59,23 @@ def fraud_node(state: TriageState) -> dict[str, Any]:
 	risk_label = risk_band.capitalize()
 	decision_human = "Manual review recommended" if risk_band in {"medium", "high"} else "Approve"
 	summary = f"{risk_label} Risk ({risk_score}/100): {decision_human}."
+	# Record telemetry
+	record_event(TriageEvent(
+		event_id=event_id,
+		timestamp_s=datetime.utcnow().timestamp(),
+		intent="fraud",
+		payload=dict(payload),
+		decision=str(result.decision),
+		risk_band=str(result.risk_band),
+		alert_score=float(result.alert_score),
+		explanations=list(explanations),
+		features=features,
+		sla_ms=sla_ms,
+	))
+
 	return {
 		"result": {
+			"event_id": event_id,
 			"alert_score": result.alert_score,
 			"decision": result.decision,
 			"rationale": result.rationale,
@@ -63,6 +85,7 @@ def fraud_node(state: TriageState) -> dict[str, Any]:
 			"explanations": explanations,
 			"summary": summary,
 			"rule_hits": getattr(result, "rule_hits", []),
+			"sla_ms": sla_ms,
 		},
 	}
 

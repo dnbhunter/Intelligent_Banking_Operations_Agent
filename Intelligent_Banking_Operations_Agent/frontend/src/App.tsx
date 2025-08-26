@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import FraudTriage from '@/pages/FraudTriage'
 import CreditTriage from '@/pages/CreditTriage'
 import Analytics from '@/pages/Analytics'
+import AnalystQueue from '@/pages/AnalystQueue'
 import Layout from './components/Layout'
 
 export default function App() {
@@ -25,6 +26,11 @@ export default function App() {
 					<Route path="/analytics" element={
 						<motion.div key="analytics" initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -6}} transition={{duration: 0.15}}>
 							<Analytics />
+						</motion.div>
+					} />
+					<Route path="/queue" element={
+						<motion.div key="queue" initial={{opacity: 0, y: 8}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -6}} transition={{duration: 0.15}}>
+							<AnalystQueue />
 						</motion.div>
 					} />
 				</Routes>

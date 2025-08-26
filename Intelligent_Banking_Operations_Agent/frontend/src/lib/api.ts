@@ -21,7 +21,7 @@ const rng = (seed: string) => {
 const USE_MOCKS = ((import.meta as any).env?.VITE_USE_MOCKS ?? 'false') === 'true'
 const API_BASE = (import.meta as any).env?.VITE_API_BASE ?? 'http://127.0.0.1:8000/api/v1'
 
-export async function runFraudTriage(payload: FraudPayload): Promise<{ decision: 'approve'|'review'|'decline', score: number, reasons: string[], risk_band?: 'low'|'medium'|'high', summary?: string, explanations?: string[], sla_ms?: number }> {
+export async function runFraudTriage(payload: FraudPayload): Promise<{ decision: 'approve'|'review'|'decline', score: number, reasons: string[], risk_band?: 'low'|'medium'|'high', summary?: string, explanations?: string[], sla_ms?: number, event_id?: string }> {
 	if (!USE_MOCKS) {
 		const resp = await fetch(`${API_BASE}/triage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
 			payload: {
@@ -36,8 +36,9 @@ export async function runFraudTriage(payload: FraudPayload): Promise<{ decision:
 			}
 		}) })
 		const json = await resp.json()
-		const decision: 'approve'|'review'|'decline' = json.risk_band === 'high' ? 'decline' : json.risk_band === 'medium' ? 'review' : 'approve'
-		return { decision, score: Math.round((json.alert_score ?? 0)*100), reasons: (json.explanations ?? json.rule_hits ?? []), risk_band: json.risk_band, summary: json.summary, explanations: json.explanations, sla_ms: undefined }
+		const result = json.result ?? json
+		const decision: 'approve'|'review'|'decline' = result.risk_band === 'high' ? 'decline' : result.risk_band === 'medium' ? 'review' : 'approve'
+		return { decision, score: Math.round((result.alert_score ?? 0)*100), reasons: (result.explanations ?? result.rule_hits ?? []), risk_band: result.risk_band, summary: result.summary, explanations: result.explanations, sla_ms: result.sla_ms, event_id: result.event_id }
 	}
 	await sleep(600)
 	const seed = JSON.stringify(payload)
@@ -95,6 +96,60 @@ export async function getAnalytics(): Promise<AnalyticsData> {
 			high: 10 + Math.floor(Math.random()*20),
 		},
 	}
+}
+
+export async function listFraudEvents(limit = 50): Promise<{ items: Array<{ event_id: string, timestamp_s: number, decision: string, risk_band: 'low'|'medium'|'high', alert_score: number, explanations: string[], sla_ms?: number }>}> {
+	if (!USE_MOCKS) {
+		const resp = await fetch(`${API_BASE}/fraud/events?limit=${encodeURIComponent(String(limit))}`)
+		return await resp.json()
+	}
+	await sleep(300)
+	return { items: [] }
+}
+
+export async function labelFraudEvent(event_id: string, label: 'fraud'|'genuine'): Promise<{ status: string }> {
+	if (!USE_MOCKS) {
+		const resp = await fetch(`${API_BASE}/fraud/label`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event_id, label }) })
+		return await resp.json()
+	}
+	await sleep(200)
+	return { status: 'ok' }
+}
+
+export async function suggestRules(limit = 3): Promise<{ suggestions: Array<{ rule_id: string, description: string, proposed_weight: number, condition: { feature: string, operator: string, value: number }, support: number }>}> {
+	if (!USE_MOCKS) {
+		const resp = await fetch(`${API_BASE}/fraud/rules/suggest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ limit }) })
+		return await resp.json()
+	}
+	await sleep(200)
+	return { suggestions: [] }
+}
+
+export async function getRuntimeRules(): Promise<{ rules: Array<{ description: string, feature: string, operator: string, value: number, weight: number }>}> {
+	if (!USE_MOCKS) {
+		const resp = await fetch(`${API_BASE}/fraud/rules/runtime`)
+		return await resp.json()
+	}
+	await sleep(200)
+	return { rules: [] }
+}
+
+export async function acceptRuntimeRule(rule: { description: string, feature: string, operator?: string, value?: number, weight?: number }): Promise<{ accepted: any }>{
+	if (!USE_MOCKS) {
+		const resp = await fetch(`${API_BASE}/fraud/rules/runtime`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rule) })
+		return await resp.json()
+	}
+	await sleep(200)
+	return { accepted: rule }
+}
+
+export async function clearRuntimeRules(): Promise<{ status: string }>{
+	if (!USE_MOCKS) {
+		const resp = await fetch(`${API_BASE}/fraud/rules/runtime`, { method: 'DELETE' })
+		return await resp.json()
+	}
+	await sleep(200)
+	return { status: 'cleared' }
 }
 
 

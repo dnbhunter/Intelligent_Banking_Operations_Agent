@@ -33,6 +33,9 @@ export default function Layout({ children }: { children: React.ReactNode }){
 						<NavLink to="/analytics" className={({isActive}) => `flex items-center gap-3 px-3 py-2 rounded-md text-sm ${isActive ? 'bg-neutral-900 text-white' : 'text-gray-300 hover:text-white'}`}>
 							<BarChart3 size={16} /> Analytics
 						</NavLink>
+						<NavLink to="/queue" className={({isActive}) => `flex items-center gap-3 px-3 py-2 rounded-md text-sm ${isActive ? 'bg-neutral-900 text-white' : 'text-gray-300 hover:text-white'}`}>
+							<Shield size={16} /> Analyst Queue
+						</NavLink>
 					</nav>
 				</aside>
 				<main className="col-span-12 md:col-span-9 lg:col-span-10">

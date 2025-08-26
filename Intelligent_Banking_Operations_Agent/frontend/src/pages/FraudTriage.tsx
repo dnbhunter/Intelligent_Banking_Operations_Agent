@@ -6,7 +6,7 @@ import Button from '@/components/Button'
 import { Card, CardContent, CardHeader } from '@/components/ui/Card'
 import { Input, Select } from '@/components/ui/Inputs'
 import { FraudPayloadSchema, type FraudPayload } from '@/lib/schemas'
-import { runFraudTriage } from '@/lib/api'
+import { runFraudTriage, labelFraudEvent } from '@/lib/api'
 import { useAppStore } from '@/store/useAppStore'
 import { toast } from 'sonner'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -35,7 +35,7 @@ export default function FraudTriage(){
 			setFraud(data, resp)
 			const band = (resp as any).risk_band ? ((resp as any).risk_band as string).toUpperCase() : 'N/A'
 			const score = typeof resp.score === 'number' ? resp.score : Math.round(((resp as any).alert_score ?? 0)*100)
-			toast.success(`Fraud: ${band} • ${resp.decision} • ${score}/100`)
+			toast.success(`Fraud: ${band} • ${resp.decision} • ${score}/100${(resp as any).event_id?` • ${(resp as any).event_id}`:''}`)
 		} catch (error) {
 			console.error(error)
 			toast.error('An unexpected error occurred.', {
@@ -62,8 +62,11 @@ export default function FraudTriage(){
 								<Input {...register('account_id')} label="Account ID" />{errors.account_id && <span className="text-red-400">{errors.account_id.message}</span>}
 								<Select {...register('channel')} label="Channel"><option>ecommerce</option><option>pos</option><option>atm</option><option>p2p</option></Select>{errors.channel && <span className="text-red-400">{errors.channel.message}</span>}
 							</div>
-							<div className="mt-4">
+							<div className="mt-4 flex gap-3 items-center">
 								<Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Running…' : 'Run Fraud Triage'}</Button>
+								{(result as any)?.event_id && (
+									<div className="text-xs text-gray-400">Event: {(result as any).event_id}</div>
+								)}
 							</div>
 						</CardContent>
 					</Card>
@@ -85,6 +88,13 @@ export default function FraudTriage(){
 									{(((result as any).explanations) || (result as any).reasons || []).map((r:string, i:number)=>(<li key={i}>{r}</li>))}
 								</ul>
 								{(result as any).sla_ms && <div className="text-xs text-gray-400 mt-2">SLA {(result as any).sla_ms} ms</div>}
+								{(result as any).event_id && (
+									<div className="flex items-center gap-3 mt-2">
+										<div className="text-xs text-gray-500">Event ID {(result as any).event_id}</div>
+										<Button variant='subtle' onClick={async()=>{ await labelFraudEvent((result as any).event_id, 'fraud'); toast.success('Labeled as fraud') }}>Mark Fraud</Button>
+										<Button variant='subtle' onClick={async()=>{ await labelFraudEvent((result as any).event_id, 'genuine'); toast.success('Labeled as genuine') }}>Mark Genuine</Button>
+									</div>
+								)}
 							</motion.div>
 						) : (
 							<motion.div key="placeholder" initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} className="rounded border border-dashed border-border/60 p-8 text-center text-gray-400">No results yet</motion.div>

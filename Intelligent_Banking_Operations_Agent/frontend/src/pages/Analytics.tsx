@@ -33,6 +33,21 @@ export default function Analytics(){
 							</Card>
 						))}
 					</div>
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+						<Card>
+							<CardContent>
+								<div className="text-xs text-gray-400 uppercase">VDR</div>
+								<div className="text-2xl mt-1">{ loading ? '…' : (data as any)?.vdr !== undefined ? (data as any).vdr.toFixed(1) : 'N/A' }</div>
+							</CardContent>
+						</Card>
+						<Card>
+							<CardContent>
+								<div className="text-xs text-gray-400 uppercase">Confusion</div>
+								<div className="text-sm mt-1">{ loading ? '…' : `TP ${(data as any)?.confusion?.tp ?? 0} / FP ${(data as any)?.confusion?.fp ?? 0}` }</div>
+								<div className="text-sm">{ loading ? '' : `TN ${(data as any)?.confusion?.tn ?? 0} / FN ${(data as any)?.confusion?.fn ?? 0}` }</div>
+							</CardContent>
+						</Card>
+					</div>
 				</div>
 				<div className="col-span-12">
 					<Card>
